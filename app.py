@@ -132,7 +132,7 @@ def generate_answer_with_web(client, query, web_snippets):
                 {"role": "user", "content": user_prompt},
             ],
             temperature=0.3,
-            max_tokens=500,
+            max_tokens=700,
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -256,7 +256,7 @@ def generate_answer(client, query, context_chunks, chat_history=None):
             model=GROQ_MODEL,
             messages=messages,
             temperature=0.3,
-            max_tokens=500,
+            max_tokens=700,
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -288,6 +288,11 @@ with st.sidebar:
         st.success("Groq API key already configured.")
     st.markdown("[Free Groq API key yahan se lo →](https://console.groq.com/keys)")
     st.divider()
+    if st.button("🗑️ New Chat", use_container_width=True):
+        st.session_state.messages = []
+        st.session_state.editing_index = None
+        st.rerun()
+    st.divider()
     st.markdown("**Sample questions:**")
     st.markdown("- Creta ki price kya hai?\n- Creta aur Venue me difference?\n- EV options kya hain?\n- Family ke liye best car kaunsi hai?")
 
@@ -310,10 +315,18 @@ FOLLOWUP_TRIGGERS = [
 
 def build_retrieval_query(query, chat_history):
     """If this looks like a short follow-up ('aur detail do'), pull in the
-    last user message so retrieval still knows which car/topic we're on."""
+    last user message so retrieval still knows which car/topic we're on.
+    But if the new query already names its own model (e.g. user switches
+    from Creta to just 'venue'), treat it as a fresh topic and don't merge."""
     query_lower = query.lower()
-    is_followup = any(trigger in query_lower for trigger in FOLLOWUP_TRIGGERS) or len(query.split()) <= 4
-    if is_followup and chat_history:
+    mentions_own_model = any(kw in query_lower for kw in MODEL_KEYWORDS)
+    has_followup_trigger = any(trigger in query_lower for trigger in FOLLOWUP_TRIGGERS)
+    is_short = len(query.split()) <= 4
+
+    if mentions_own_model and not has_followup_trigger:
+        return query  # already has a clear subject of its own, no need to merge
+
+    if (has_followup_trigger or is_short) and chat_history:
         last_user_msgs = [m["content"] for m in chat_history if m["role"] == "user"]
         if last_user_msgs:
             return f"{last_user_msgs[-1]} {query}"
@@ -345,7 +358,11 @@ def run_rag(query, chat_history=None):
             source_label = "🌐 Live web search"
         # if web search itself returns nothing, we just keep the KB answer
 
-    image_url, image_caption = get_model_image(retrieval_query)
+    image_url, image_caption = get_model_image(query)
+    if not image_url:
+        # Raw query had no model name (pure follow-up like "aur detail do") —
+        # fall back to the merged retrieval query which pulls in the topic
+        image_url, image_caption = get_model_image(retrieval_query)
     return answer, image_url, image_caption, source_label
 
 
@@ -399,7 +416,9 @@ for i, msg in enumerate(st.session_state.messages):
                     regenerate_from(i - 1)
 
 # Chat input for new questions
-if prompt := st.chat_input("Apna sawaal likho..."):
+raw_prompt = st.chat_input("Apna sawaal likho...")
+if raw_prompt and raw_prompt.strip():
+    prompt = raw_prompt.strip()
     history_before = list(st.session_state.messages)  # snapshot before adding new prompt
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
