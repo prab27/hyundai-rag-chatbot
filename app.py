@@ -8,6 +8,7 @@ Run with: streamlit run app.py
 """
 
 import os
+import urllib.parse
 import streamlit as st
 import chromadb
 from chromadb.utils import embedding_functions
@@ -35,6 +36,35 @@ MODEL_KEYWORDS = [
     "i20 n line", "i20", "ioniq 5", "ioniq 6", "ioniq 9", "ioniq",
     "tucson", "grand i10 nios", "nios", "aura", "bluelink",
 ]
+
+# In a real production system, each car's image comes from the company's own
+# CDN/S3 bucket (e.g. https://cdn.hyundai.com/creta/hero.jpg), stored alongside
+# the rest of that model's structured data. For this demo we use stable,
+# freely-licensed Wikimedia Commons images so the links won't break.
+MODEL_IMAGES = {
+    "creta electric": "Hyundai_Creta_Electric_SU2_EV_PE_(3).jpg",
+    "creta": "Hyundai_Creta_India.jpg",
+    "venue": "Hyundai_Venue.jpg",
+    "verna": "HYUNDAI_VERNA_(RC).jpg",
+    "i20": "Hyundai_i20_(BC3)_IMG_4165.jpg",
+    "alcazar": "2021_Hyundai_Alcazar_2.0_Signature_(India)_front_view.png",
+    "ioniq 5": "Hyundai_Ioniq_5.jpg",
+}
+
+
+def get_model_image(query):
+    """Detect a car model in the query and return (image_url, caption) or None."""
+    query_lower = query.lower()
+    for keyword in MODEL_KEYWORDS:
+        if keyword in query_lower and keyword in MODEL_IMAGES:
+            filename = MODEL_IMAGES[keyword]
+            encoded = urllib.parse.quote(filename, safe="()_.-")
+            url = f"https://commons.wikimedia.org/wiki/Special:FilePath/{encoded}?width=500"
+            caption = f"Hyundai {keyword.title()}"
+            return url, caption
+    return None, None
+
+
 
 
 @st.cache_resource(show_spinner="Knowledge base load ho rahi hai...")
@@ -188,12 +218,15 @@ if "editing_index" not in st.session_state:
 
 
 def run_rag(query):
-    """Runs retrieval + generation for a given query, returns the answer text."""
+    """Runs retrieval + generation for a given query.
+    Returns (answer_text, image_url_or_None, image_caption_or_None)."""
     client = get_groq_client()
     if client is None:
-        return "⚠️ Pehle sidebar me apni Groq API key daalo."
+        return "⚠️ Pehle sidebar me apni Groq API key daalo.", None, None
     chunks = retrieve_context(collection, all_chunks, query, top_k=4)
-    return generate_answer(client, query, chunks)
+    answer = generate_answer(client, query, chunks)
+    image_url, image_caption = get_model_image(query)
+    return answer, image_url, image_caption
 
 
 def regenerate_from(user_index):
@@ -202,8 +235,11 @@ def regenerate_from(user_index):
     query = st.session_state.messages[user_index]["content"]
     st.session_state.messages = st.session_state.messages[: user_index + 1]
     with st.spinner("Soch raha hoon..."):
-        answer = run_rag(query)
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+        answer, image_url, image_caption = run_rag(query)
+    st.session_state.messages.append({
+        "role": "assistant", "content": answer,
+        "image": image_url, "image_caption": image_caption,
+    })
     st.rerun()
 
 
@@ -227,6 +263,8 @@ for i, msg in enumerate(st.session_state.messages):
                     st.rerun()
         else:
             st.markdown(msg["content"])
+            if msg["role"] == "assistant" and msg.get("image"):
+                st.image(msg["image"], caption=msg.get("image_caption"), width=400)
             if msg["role"] == "user":
                 if st.button("✏️ Edit", key=f"edit_btn_{i}"):
                     st.session_state.editing_index = i
@@ -244,8 +282,13 @@ if prompt := st.chat_input("Apna sawaal likho..."):
 
     with st.chat_message("assistant"):
         with st.spinner("Soch raha hoon..."):
-            answer = run_rag(prompt)
+            answer, image_url, image_caption = run_rag(prompt)
         st.markdown(answer)
+        if image_url:
+            st.image(image_url, caption=image_caption, width=400)
 
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+    st.session_state.messages.append({
+        "role": "assistant", "content": answer,
+        "image": image_url, "image_caption": image_caption,
+    })
     st.rerun()
