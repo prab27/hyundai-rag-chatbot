@@ -19,7 +19,7 @@ from groq import Groq
 KB_FILE = "hyundai_knowledge_base.txt"
 CHUNK_SIZE = 800        # characters per chunk
 CHUNK_OVERLAP = 100     # overlap between chunks so context isn't cut off
-GROQ_MODEL = "llama-3.3-70b-versatile"   # fast + free tier on Groq
+GROQ_MODEL = "openai/gpt-oss-120b"   # current recommended model on Groq (free tier)
 COLLECTION_NAME = "hyundai_kb"
 
 st.set_page_config(page_title="Hyundai Assistant", page_icon="🚗")
@@ -106,16 +106,24 @@ def generate_answer(client, query, context_chunks):
 
     user_prompt = f"CONTEXT:\n{context_text}\n\nQUESTION: {query}"
 
-    response = client.chat.completions.create(
-        model=GROQ_MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=0.3,
-        max_tokens=500,
-    )
-    return response.choices[0].message.content
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.3,
+            max_tokens=500,
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return (
+            "⚠️ LLM se jawab lene me error aaya. Details: "
+            f"`{str(e)}`\n\nAgar yeh 'model decommissioned' ya 'invalid_request' bol raha hai, "
+            "to console.groq.com/docs/models pe jaake current model ka naam check karo aur "
+            "app.py me GROQ_MODEL update karo."
+        )
 
 
 # ---------------------------------------------------------------------------
