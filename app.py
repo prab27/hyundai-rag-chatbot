@@ -27,6 +27,16 @@ st.set_page_config(page_title="Hyundai Assistant", page_icon="🚗")
 # ---------------------------------------------------------------------------
 # STEP 1: Load & chunk the knowledge base (runs once, cached)
 # ---------------------------------------------------------------------------
+
+# Known model names to catch keyword matches that semantic search sometimes
+# misses on short queries like "price of creta"
+MODEL_KEYWORDS = [
+    "creta electric", "creta", "venue", "verna", "exter", "alcazar",
+    "i20 n line", "i20", "ioniq 5", "ioniq 6", "ioniq 9", "ioniq",
+    "tucson", "grand i10 nios", "nios", "aura", "bluelink",
+]
+
+
 @st.cache_resource(show_spinner="Knowledge base load ho rahi hai...")
 def build_vector_store():
     with open(KB_FILE, "r", encoding="utf-8") as f:
@@ -67,12 +77,28 @@ def build_vector_store():
         documents=chunks,
         ids=[f"chunk_{i}" for i in range(len(chunks))],
     )
-    return collection
+    return collection, chunks
 
 
-def retrieve_context(collection, query, top_k=3):
+def retrieve_context(collection, all_chunks, query, top_k=4):
+    # 1) Semantic search (catches paraphrased / conceptual questions)
     results = collection.query(query_texts=[query], n_results=top_k)
-    return results["documents"][0]
+    retrieved = list(results["documents"][0])
+
+    # 2) Keyword boost: if the query mentions a specific model by name,
+    # make sure every chunk containing that model name is included too.
+    # This fixes cases like "price of creta" where embeddings alone
+    # sometimes miss the exact section.
+    query_lower = query.lower()
+    for keyword in MODEL_KEYWORDS:
+        if keyword in query_lower:
+            for chunk in all_chunks:
+                if keyword in chunk.lower() and chunk not in retrieved:
+                    retrieved.append(chunk)
+
+    return retrieved
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -152,7 +178,7 @@ with st.sidebar:
     st.markdown("- Creta ki price kya hai?\n- Creta aur Venue me difference?\n- EV options kya hain?\n- Family ke liye best car kaunsi hai?")
 
 # Build (or load cached) vector store
-collection = build_vector_store()
+collection, all_chunks = build_vector_store()
 
 # Chat history
 if "messages" not in st.session_state:
@@ -166,7 +192,7 @@ def run_rag(query):
     client = get_groq_client()
     if client is None:
         return "⚠️ Pehle sidebar me apni Groq API key daalo."
-    chunks = retrieve_context(collection, query, top_k=3)
+    chunks = retrieve_context(collection, all_chunks, query, top_k=4)
     return generate_answer(client, query, chunks)
 
 
