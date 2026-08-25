@@ -100,8 +100,10 @@ def generate_answer(client, query, context_chunks):
         "Sirf neeche diye gaye CONTEXT ke aadhar par jawab do. "
         "Agar context me answer nahi hai, to politely bolo ki yeh jaankari "
         "available nahi hai aur dealership se contact karne ko bolo. "
-        "Jawab crisp aur friendly rakho. User jis language (Hindi/English/Hinglish) "
-        "me poochta hai usi me jawab do."
+        "Jawab crisp aur friendly rakho. "
+        "IMPORTANT: User jis language/script me sawaal poochta hai (Hindi/English/Hinglish/Devanagari), "
+        "usi language aur usi script me jawab do — agar user Roman/Hinglish me poochta hai to jawab "
+        "bhi Roman script me do, Devanagari me mat likho."
     )
 
     user_prompt = f"CONTEXT:\n{context_text}\n\nQUESTION: {query}"
@@ -155,25 +157,69 @@ collection = build_vector_store()
 # Chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "editing_index" not in st.session_state:
+    st.session_state.editing_index = None
 
-for msg in st.session_state.messages:
+
+def run_rag(query):
+    """Runs retrieval + generation for a given query, returns the answer text."""
+    client = get_groq_client()
+    if client is None:
+        return "⚠️ Pehle sidebar me apni Groq API key daalo."
+    chunks = retrieve_context(collection, query, top_k=3)
+    return generate_answer(client, query, chunks)
+
+
+def regenerate_from(user_index):
+    """Re-runs the RAG pipeline for the user message at user_index and
+    replaces everything after it (i.e. the old assistant answer)."""
+    query = st.session_state.messages[user_index]["content"]
+    st.session_state.messages = st.session_state.messages[: user_index + 1]
+    with st.spinner("Soch raha hoon..."):
+        answer = run_rag(query)
+    st.session_state.messages.append({"role": "assistant", "content": answer})
+    st.rerun()
+
+
+# Render existing chat history
+for i, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+        if msg["role"] == "user" and st.session_state.editing_index == i:
+            # Edit mode for this user message
+            edited_text = st.text_area(
+                "Sawaal edit karo:", value=msg["content"], key=f"edit_box_{i}"
+            )
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if st.button("✅ Save & Resend", key=f"save_{i}"):
+                    st.session_state.messages[i]["content"] = edited_text
+                    st.session_state.editing_index = None
+                    regenerate_from(i)
+            with col2:
+                if st.button("❌ Cancel", key=f"cancel_{i}"):
+                    st.session_state.editing_index = None
+                    st.rerun()
+        else:
+            st.markdown(msg["content"])
+            if msg["role"] == "user":
+                if st.button("✏️ Edit", key=f"edit_btn_{i}"):
+                    st.session_state.editing_index = i
+                    st.rerun()
+            elif msg["role"] == "assistant":
+                if st.button("🔄 Regenerate", key=f"regen_btn_{i}"):
+                    # user_index is the message right before this assistant reply
+                    regenerate_from(i - 1)
 
-# Chat input
+# Chat input for new questions
 if prompt := st.chat_input("Apna sawaal likho..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        client = get_groq_client()
-        if client is None:
-            answer = "⚠️ Pehle sidebar me apni Groq API key daalo."
-        else:
-            with st.spinner("Soch raha hoon..."):
-                chunks = retrieve_context(collection, prompt, top_k=3)
-                answer = generate_answer(client, prompt, chunks)
+        with st.spinner("Soch raha hoon..."):
+            answer = run_rag(prompt)
         st.markdown(answer)
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
+    st.rerun()
