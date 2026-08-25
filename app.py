@@ -112,6 +112,23 @@ def web_search_fallback(query):
         return []
 
 
+def friendly_groq_error(e):
+    """Turn a raw Groq/HTTP exception into a clear, non-technical message."""
+    msg = str(e).lower()
+    if "401" in msg or "invalid_api_key" in msg or "unauthorized" in msg:
+        return "⚠️ Groq API key invalid lag rahi hai. Sidebar/Secrets me sahi key check karo."
+    if "429" in msg or "rate limit" in msg:
+        return "⚠️ Thoda zyada traffic ho gaya (rate limit). Kuch second baad phir try karo."
+    if "model_decommissioned" in msg or "decommissioned" in msg:
+        return (
+            "⚠️ Yeh AI model ab discontinue ho chuka hai. "
+            "console.groq.com/docs/models pe current model dekh ke app.py me GROQ_MODEL update karo."
+        )
+    if "timeout" in msg or "connection" in msg:
+        return "⚠️ Network/connection issue aaya. Ek baar phir try karo."
+    return f"⚠️ Kuch galat ho gaya. Technical details: `{str(e)[:200]}`"
+
+
 def generate_answer_with_web(client, query, web_snippets):
     context_text = "\n\n---\n\n".join(web_snippets)
     system_prompt = (
@@ -136,7 +153,7 @@ def generate_answer_with_web(client, query, web_snippets):
         )
         return response.choices[0].message.content
     except Exception as e:
-        return f"⚠️ Web search ke baad bhi LLM error aaya: `{str(e)}`"
+        return friendly_groq_error(e)
 
 
 
@@ -150,17 +167,33 @@ def build_vector_store():
     raw_sections = text.split("=================================================================")
     sections = [s.strip() for s in raw_sections if s.strip()]
 
-    # Further split any very long section into smaller chunks with overlap
+    # Further split any very long section into smaller chunks — but split on
+    # LINE boundaries, never mid-line. This matters a lot for this dataset:
+    # the comparison table and FAQ section have long lines/rows that must
+    # stay intact, otherwise a car's price row (or a Q without its A) could
+    # get cut in half and the bot would answer with garbled/wrong data.
     chunks = []
     for section in sections:
         if len(section) <= CHUNK_SIZE:
             chunks.append(section)
-        else:
-            start = 0
-            while start < len(section):
-                end = start + CHUNK_SIZE
-                chunks.append(section[start:end])
-                start += CHUNK_SIZE - CHUNK_OVERLAP
+            continue
+
+        lines = section.split("\n")
+        current_chunk_lines = []
+        current_len = 0
+        for line in lines:
+            line_len = len(line) + 1  # +1 for the newline
+            if current_len + line_len > CHUNK_SIZE and current_chunk_lines:
+                chunks.append("\n".join(current_chunk_lines))
+                # start next chunk with a small overlap: repeat the last
+                # couple of lines so context isn't lost at the boundary
+                overlap_lines = current_chunk_lines[-2:] if len(current_chunk_lines) >= 2 else current_chunk_lines
+                current_chunk_lines = list(overlap_lines)
+                current_len = sum(len(l) + 1 for l in current_chunk_lines)
+            current_chunk_lines.append(line)
+            current_len += line_len
+        if current_chunk_lines:
+            chunks.append("\n".join(current_chunk_lines))
 
     # Free local embedding model (no API cost, runs on CPU)
     embed_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
@@ -260,12 +293,7 @@ def generate_answer(client, query, context_chunks, chat_history=None):
         )
         return response.choices[0].message.content
     except Exception as e:
-        return (
-            "⚠️ LLM se jawab lene me error aaya. Details: "
-            f"`{str(e)}`\n\nAgar yeh 'model decommissioned' ya 'invalid_request' bol raha hai, "
-            "to console.groq.com/docs/models pe jaake current model ka naam check karo aur "
-            "app.py me GROQ_MODEL update karo."
-        )
+        return friendly_groq_error(e)
 
 
 # ---------------------------------------------------------------------------
@@ -393,9 +421,12 @@ for i, msg in enumerate(st.session_state.messages):
             col1, col2 = st.columns([1, 1])
             with col1:
                 if st.button("✅ Save & Resend", key=f"save_{i}"):
-                    st.session_state.messages[i]["content"] = edited_text
-                    st.session_state.editing_index = None
-                    regenerate_from(i)
+                    if edited_text.strip():
+                        st.session_state.messages[i]["content"] = edited_text.strip()
+                        st.session_state.editing_index = None
+                        regenerate_from(i)
+                    else:
+                        st.warning("Khaali sawaal save nahi ho sakta.")
             with col2:
                 if st.button("❌ Cancel", key=f"cancel_{i}"):
                     st.session_state.editing_index = None
