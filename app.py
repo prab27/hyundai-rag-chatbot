@@ -222,7 +222,7 @@ def get_groq_client():
     return Groq(api_key=api_key)
 
 
-def generate_answer(client, query, context_chunks):
+def generate_answer(client, query, context_chunks, chat_history=None):
     context_text = "\n\n---\n\n".join(context_chunks)
 
     system_prompt = (
@@ -233,18 +233,28 @@ def generate_answer(client, query, context_chunks):
         "Jawab crisp aur friendly rakho. "
         "IMPORTANT: User jis language/script me sawaal poochta hai (Hindi/English/Hinglish/Devanagari), "
         "usi language aur usi script me jawab do — agar user Roman/Hinglish me poochta hai to jawab "
-        "bhi Roman script me do, Devanagari me mat likho."
+        "bhi Roman script me do, Devanagari me mat likho. "
+        "IMPORTANT: Neeche CONVERSATION HISTORY di gayi hai — agar user follow-up sawaal poochhe "
+        "(jaise 'aur detail do', 'iske baare me aur batao', 'price kya hai iski'), to history dekh ke "
+        "samjho wo kis cheez ke baare me baat kar raha hai, aur usi topic ka detail do."
     )
 
+    # Build the messages list: system prompt + recent chat history + current question
+    messages = [{"role": "system", "content": system_prompt}]
+
+    if chat_history:
+        # Only send the last few turns to keep the prompt small and relevant
+        for turn in chat_history[-6:]:
+            role = "user" if turn["role"] == "user" else "assistant"
+            messages.append({"role": role, "content": turn["content"]})
+
     user_prompt = f"CONTEXT:\n{context_text}\n\nQUESTION: {query}"
+    messages.append({"role": "user", "content": user_prompt})
 
     try:
         response = client.chat.completions.create(
             model=GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
+            messages=messages,
             temperature=0.3,
             max_tokens=500,
         )
@@ -291,28 +301,51 @@ if "editing_index" not in st.session_state:
     st.session_state.editing_index = None
 
 
-def run_rag(query):
+FOLLOWUP_TRIGGERS = [
+    "aur detail", "aur batao", "iske baare", "uske baare", "isme", "usme",
+    "iska", "uska", "iski", "uski", "isse", "usse", "more detail",
+    "tell me more", "explain more", "aur bata",
+]
+
+
+def build_retrieval_query(query, chat_history):
+    """If this looks like a short follow-up ('aur detail do'), pull in the
+    last user message so retrieval still knows which car/topic we're on."""
+    query_lower = query.lower()
+    is_followup = any(trigger in query_lower for trigger in FOLLOWUP_TRIGGERS) or len(query.split()) <= 4
+    if is_followup and chat_history:
+        last_user_msgs = [m["content"] for m in chat_history if m["role"] == "user"]
+        if last_user_msgs:
+            return f"{last_user_msgs[-1]} {query}"
+    return query
+
+
+def run_rag(query, chat_history=None):
     """Runs retrieval + generation for a given query.
     Returns (answer_text, image_url_or_None, image_caption_or_None, source_label)."""
     client = get_groq_client()
     if client is None:
         return "⚠️ Pehle sidebar me apni Groq API key daalo.", None, None, None
 
+    # For follow-ups like "aur detail do", widen the retrieval query using
+    # the previous user message so we fetch chunks about the right topic
+    retrieval_query = build_retrieval_query(query, chat_history)
+
     # Step 1: Try the static knowledge base first (fast, free, no rate limits)
-    chunks = retrieve_context(collection, all_chunks, query, top_k=4)
-    answer = generate_answer(client, query, chunks)
+    chunks = retrieve_context(collection, all_chunks, retrieval_query, top_k=4)
+    answer = generate_answer(client, query, chunks, chat_history=chat_history)
     source_label = "📚 Knowledge base"
 
     # Step 2: If the query wants live info, or KB came up empty, fall back
     # to a real-time web search
     if needs_live_search(query, answer):
-        snippets = web_search_fallback(query)
+        snippets = web_search_fallback(retrieval_query)
         if snippets:
             answer = generate_answer_with_web(client, query, snippets)
             source_label = "🌐 Live web search"
         # if web search itself returns nothing, we just keep the KB answer
 
-    image_url, image_caption = get_model_image(query)
+    image_url, image_caption = get_model_image(retrieval_query)
     return answer, image_url, image_caption, source_label
 
 
@@ -320,9 +353,10 @@ def regenerate_from(user_index):
     """Re-runs the RAG pipeline for the user message at user_index and
     replaces everything after it (i.e. the old assistant answer)."""
     query = st.session_state.messages[user_index]["content"]
+    history_before = st.session_state.messages[:user_index]
     st.session_state.messages = st.session_state.messages[: user_index + 1]
     with st.spinner("Soch raha hoon..."):
-        answer, image_url, image_caption, source_label = run_rag(query)
+        answer, image_url, image_caption, source_label = run_rag(query, chat_history=history_before)
     st.session_state.messages.append({
         "role": "assistant", "content": answer,
         "image": image_url, "image_caption": image_caption,
@@ -366,13 +400,14 @@ for i, msg in enumerate(st.session_state.messages):
 
 # Chat input for new questions
 if prompt := st.chat_input("Apna sawaal likho..."):
+    history_before = list(st.session_state.messages)  # snapshot before adding new prompt
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
         with st.spinner("Soch raha hoon..."):
-            answer, image_url, image_caption, source_label = run_rag(prompt)
+            answer, image_url, image_caption, source_label = run_rag(prompt, chat_history=history_before)
         st.markdown(answer)
         if image_url:
             st.image(image_url, caption=image_caption, width=400)
