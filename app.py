@@ -158,7 +158,7 @@ def generate_answer_with_web(client, query, web_snippets):
 
 
 
-@st.cache_resource(show_spinner="Knowledge base load ho rahi hai...")
+@st.cache_resource(show_spinner="Loading knowledge base...")
 def build_vector_store():
     with open(KB_FILE, "r", encoding="utf-8") as f:
         text = f.read()
@@ -300,7 +300,7 @@ def generate_answer(client, query, context_chunks, chat_history=None):
 # STREAMLIT UI
 # ---------------------------------------------------------------------------
 st.title("🚗 Hyundai Assistant (RAG Demo)")
-st.caption("Creta, Venue, Verna, Alcazar aur baaki models ke baare me kuch bhi poochho.")
+st.caption("Ask me anything about Creta, Venue, Verna, Alcazar and other Hyundai models.")
 
 # Sidebar: API key input (if not set as environment variable)
 with st.sidebar:
@@ -314,7 +314,7 @@ with st.sidebar:
             st.session_state["groq_api_key"] = key_input
     else:
         st.success("Groq API key already configured.")
-    st.markdown("[Free Groq API key yahan se lo →](https://console.groq.com/keys)")
+    st.markdown("[Get a free Groq API key here →](https://console.groq.com/keys)")
     st.divider()
     if st.button("🗑️ New Chat", use_container_width=True):
         st.session_state.messages = []
@@ -322,7 +322,7 @@ with st.sidebar:
         st.rerun()
     st.divider()
     st.markdown("**Sample questions:**")
-    st.markdown("- Creta ki price kya hai?\n- Creta aur Venue me difference?\n- EV options kya hain?\n- Family ke liye best car kaunsi hai?")
+    st.markdown("- What is the price of Creta?\n- Difference between Creta and Venue?\n- What are the EV options?\n- Which is the best car for a family?")
 
 # Build (or load cached) vector store
 collection, all_chunks = build_vector_store()
@@ -366,7 +366,7 @@ def run_rag(query, chat_history=None):
     Returns (answer_text, image_url_or_None, image_caption_or_None, source_label)."""
     client = get_groq_client()
     if client is None:
-        return "⚠️ Pehle sidebar me apni Groq API key daalo.", None, None, None
+        return "⚠️ Please enter your Groq API key in the sidebar first.", None, None, None
 
     # For follow-ups like "aur detail do", widen the retrieval query using
     # the previous user message so we fetch chunks about the right topic
@@ -400,7 +400,7 @@ def regenerate_from(user_index):
     query = st.session_state.messages[user_index]["content"]
     history_before = st.session_state.messages[:user_index]
     st.session_state.messages = st.session_state.messages[: user_index + 1]
-    with st.spinner("Soch raha hoon..."):
+    with st.spinner("Thinking..."):
         answer, image_url, image_caption, source_label = run_rag(query, chat_history=history_before)
     st.session_state.messages.append({
         "role": "assistant", "content": answer,
@@ -416,7 +416,7 @@ for i, msg in enumerate(st.session_state.messages):
         if msg["role"] == "user" and st.session_state.editing_index == i:
             # Edit mode for this user message
             edited_text = st.text_area(
-                "Sawaal edit karo:", value=msg["content"], key=f"edit_box_{i}"
+                "Edit your question:", value=msg["content"], key=f"edit_box_{i}"
             )
             col1, col2 = st.columns([1, 1])
             with col1:
@@ -447,7 +447,7 @@ for i, msg in enumerate(st.session_state.messages):
                     regenerate_from(i - 1)
 
 # Chat input for new questions
-raw_prompt = st.chat_input("Apna sawaal likho...")
+raw_prompt = st.chat_input("Type your question...")
 if raw_prompt and raw_prompt.strip():
     prompt = raw_prompt.strip()
     history_before = list(st.session_state.messages)  # snapshot before adding new prompt
@@ -456,7 +456,7 @@ if raw_prompt and raw_prompt.strip():
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Soch raha hoon..."):
+        with st.spinner("Thinking..."):
             answer, image_url, image_caption, source_label = run_rag(prompt, chat_history=history_before)
         st.markdown(answer)
         if image_url:
