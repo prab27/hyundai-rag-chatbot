@@ -65,6 +65,80 @@ def get_model_image(query):
     return None, None
 
 
+# ---------------------------------------------------------------------------
+# LIVE WEB SEARCH FALLBACK
+# ---------------------------------------------------------------------------
+# Real production chatbots don't rely only on a static knowledge base for
+# time-sensitive info (today's offers, latest launch news, current prices).
+# Here we fall back to a live web search when either:
+#   (a) the query itself signals it wants "current/live" info, or
+#   (b) our RAG answer came back empty-handed (bot said it doesn't know)
+LIVE_INFO_TRIGGERS = [
+    "today", "aaj", "current", "abhi", "latest", "newest", "is week",
+    "is month", "recent", "offer", "discount", "news",
+]
+
+NOT_FOUND_PHRASES = [
+    "don't have", "dont have", "not available", "no information",
+    "reach out to", "nearest hyundai dealership", "contact the dealership",
+    "please reach out", "i'm sorry, but i don't",
+]
+
+
+def needs_live_search(query, rag_answer):
+    query_lower = query.lower()
+    if any(trigger in query_lower for trigger in LIVE_INFO_TRIGGERS):
+        return True
+    answer_lower = rag_answer.lower()
+    if any(phrase in answer_lower for phrase in NOT_FOUND_PHRASES):
+        return True
+    return False
+
+
+def web_search_fallback(query):
+    """Free, no-API-key web search (DuckDuckGo) used only when the static
+    knowledge base can't answer. Returns a list of short text snippets."""
+    try:
+        from ddgs import DDGS
+        results = DDGS().text(f"Hyundai India {query}", max_results=4)
+        snippets = []
+        for r in results:
+            title = r.get("title", "")
+            body = r.get("body", "")
+            if body:
+                snippets.append(f"{title}: {body}")
+        return snippets
+    except Exception:
+        return []
+
+
+def generate_answer_with_web(client, query, web_snippets):
+    context_text = "\n\n---\n\n".join(web_snippets)
+    system_prompt = (
+        "Tum Hyundai dealership ke liye ek helpful customer-support chatbot ho. "
+        "Neeche diye gaye LIVE WEB SEARCH RESULTS ke aadhar par jawab do — yeh "
+        "current/real-time info hai. Jawab crisp aur friendly rakho. "
+        "User jis language/script me sawaal poochta hai usi me jawab do "
+        "(Roman/Hinglish me poocha hai to Roman script me hi jawab do, Devanagari mat likho). "
+        "Agar in results me bhi answer na mile to politely bolo dealership se "
+        "confirm kar lein kyunki yeh info fast-changing hai."
+    )
+    user_prompt = f"LIVE WEB SEARCH RESULTS:\n{context_text}\n\nQUESTION: {query}"
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.3,
+            max_tokens=500,
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"⚠️ Web search ke baad bhi LLM error aaya: `{str(e)}`"
+
+
 
 
 @st.cache_resource(show_spinner="Knowledge base load ho rahi hai...")
@@ -219,14 +293,27 @@ if "editing_index" not in st.session_state:
 
 def run_rag(query):
     """Runs retrieval + generation for a given query.
-    Returns (answer_text, image_url_or_None, image_caption_or_None)."""
+    Returns (answer_text, image_url_or_None, image_caption_or_None, source_label)."""
     client = get_groq_client()
     if client is None:
-        return "⚠️ Pehle sidebar me apni Groq API key daalo.", None, None
+        return "⚠️ Pehle sidebar me apni Groq API key daalo.", None, None, None
+
+    # Step 1: Try the static knowledge base first (fast, free, no rate limits)
     chunks = retrieve_context(collection, all_chunks, query, top_k=4)
     answer = generate_answer(client, query, chunks)
+    source_label = "📚 Knowledge base"
+
+    # Step 2: If the query wants live info, or KB came up empty, fall back
+    # to a real-time web search
+    if needs_live_search(query, answer):
+        snippets = web_search_fallback(query)
+        if snippets:
+            answer = generate_answer_with_web(client, query, snippets)
+            source_label = "🌐 Live web search"
+        # if web search itself returns nothing, we just keep the KB answer
+
     image_url, image_caption = get_model_image(query)
-    return answer, image_url, image_caption
+    return answer, image_url, image_caption, source_label
 
 
 def regenerate_from(user_index):
@@ -235,10 +322,11 @@ def regenerate_from(user_index):
     query = st.session_state.messages[user_index]["content"]
     st.session_state.messages = st.session_state.messages[: user_index + 1]
     with st.spinner("Soch raha hoon..."):
-        answer, image_url, image_caption = run_rag(query)
+        answer, image_url, image_caption, source_label = run_rag(query)
     st.session_state.messages.append({
         "role": "assistant", "content": answer,
         "image": image_url, "image_caption": image_caption,
+        "source": source_label,
     })
     st.rerun()
 
@@ -265,6 +353,8 @@ for i, msg in enumerate(st.session_state.messages):
             st.markdown(msg["content"])
             if msg["role"] == "assistant" and msg.get("image"):
                 st.image(msg["image"], caption=msg.get("image_caption"), width=400)
+            if msg["role"] == "assistant" and msg.get("source"):
+                st.caption(f"Source: {msg['source']}")
             if msg["role"] == "user":
                 if st.button("✏️ Edit", key=f"edit_btn_{i}"):
                     st.session_state.editing_index = i
@@ -282,13 +372,16 @@ if prompt := st.chat_input("Apna sawaal likho..."):
 
     with st.chat_message("assistant"):
         with st.spinner("Soch raha hoon..."):
-            answer, image_url, image_caption = run_rag(prompt)
+            answer, image_url, image_caption, source_label = run_rag(prompt)
         st.markdown(answer)
         if image_url:
             st.image(image_url, caption=image_caption, width=400)
+        if source_label:
+            st.caption(f"Source: {source_label}")
 
     st.session_state.messages.append({
         "role": "assistant", "content": answer,
         "image": image_url, "image_caption": image_caption,
+        "source": source_label,
     })
     st.rerun()
