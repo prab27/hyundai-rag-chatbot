@@ -1,0 +1,316 @@
+HYUNDAI INDIA - CAR MODELS KNOWLEDGE BASE (Updated August 2026)
+=================================================================
+Yeh document Hyundai India ke popular car models ki jankari deta hai —
+price, engine specs, mileage, features, aur FAQs. Yeh RAG chatbot ke
+liye demo knowledge base hai.
+
+=================================================================
+1. HYUNDAI CRETA
+=================================================================
+Segment: Mid-size SUV
+Price Range: Rs. 10.91 lakh - Rs. 20.11 lakh (ex-showroom, Delhi)
+Seating Capacity: 5 seater
+Boot Space: 433 litres
+Variants: 27 variants across trims (E, EX, S, SX, SX(O), Knight, King Edition etc.)
+
+Engine Options:
+- 1.5L Petrol (115 PS)
+- 1.5L Turbo Petrol
+- 1.5L Diesel (up to 157.57 bhp)
+Transmissions: Manual, CVT, iMT, 7-speed DCT (Automatic)
+Mileage (ARAI): 17.4 - 21.8 kmpl
+
+Key Features:
+- 6 airbags standard across all variants (including base)
+- ABS with EBD
+- Panoramic sunroof (top variants)
+- Ventilated front seats (top variants)
+- Hyundai SmartSense Level 2 ADAS: lane-keeping assist, forward collision
+  avoidance, blind-spot warning, rear cross-traffic alert, smart cruise control
+- Dual 10.25-inch screens (infotainment + digital cluster) on top-spec variants
+- Electronic stability control, hill-start assist, tyre pressure monitoring,
+  rear parking sensors
+
+Recent Updates:
+- Summer Edition launched at Rs. 12.06 lakh (adds features to lower/mid trims)
+- SX Tech and SX(O) trims discontinued; line-up now has 7 trims
+- Third-gen Creta (K3 platform) spotted testing, expected launch 2027
+
+Competitors: Kia Seltos, Tata Sierra, Renault Duster, VW Taigun
+
+=================================================================
+2. HYUNDAI VENUE
+=================================================================
+Segment: Compact SUV
+Price Range: Rs. 7.99 lakh - Rs. 15.83 lakh (ex-showroom)
+Boot Space: 375 litres
+
+Engine Options:
+- 1.2L Petrol (base variants - HX2, HX4)
+- 1.0L Kappa Turbo GDi Petrol (120 PS, 172 Nm) - 6-speed MT / 7-speed DCT
+- Diesel-automatic variant also available (new addition)
+Mileage (ARAI): 17.9 - 20.99 kmpl
+
+Key Features:
+- Dual 12.3-inch screens (infotainment + cluster)
+- 6 airbags standard
+- Level 2 ADAS with 16 features
+- Smart electric sunroof, cruise control, paddle shifters (select variants)
+- Leatherette upholstery, ventilated front seats (top trim)
+- 5-star Bharat NCAP safety rating
+- Knight Edition available with blacked-out exterior/interior theme
+
+Competitors: Tata Nexon, Kia Sonet, Maruti Brezza, Citroen C3 Aircross
+
+=================================================================
+3. HYUNDAI i20
+=================================================================
+Segment: Premium Hatchback
+Price Range: Rs. 7.04 lakh - Rs. 11.21 lakh (ex-showroom)
+Also Available: i20 N Line (sportier trim), Rs. 9.99 lakh - Rs. 11.60 lakh
+
+Key Features:
+- Bose sound system (top variant)
+- Wireless Android Auto / Apple CarPlay
+- Sunroof, digital instrument cluster
+- 6 airbags (standard across range)
+- Knight Edition available
+
+Competitors: Tata Altroz, Maruti Baleno, Honda City Hatchback (segment)
+
+=================================================================
+4. HYUNDAI VERNA
+=================================================================
+Segment: Mid-size Sedan
+Price Range: Rs. 10.98 lakh - Rs. 18.25 lakh (ex-showroom)
+
+Engine Options:
+- 1.5L NA Petrol
+- 1.5L Turbo GDi Petrol
+- Diesel option
+Mileage (ARAI): 18.05 - 20.5 kmpl approx
+
+Key Features:
+- Level 2 ADAS
+- Ventilated front seats
+- Digital cockpit with dual screens
+- Sunroof, premium interior trim
+
+Competitors: Honda City, Skoda Slavia, VW Virtus
+
+=================================================================
+5. HYUNDAI EXTER
+=================================================================
+Segment: Micro SUV
+Price Range: Rs. 5.80 lakh - Rs. 9.57 lakh (ex-showroom, facelift range
+approx Rs. 10.69 - 18.40 lakh on some listings depending on variant/edition)
+
+Key Features:
+- 6 airbags standard
+- Sunroof
+- Rear AC vents
+- Voice-assisted electric sunroof
+- Blind-view monitor (top variant)
+
+Competitors: Tata Punch, Maruti Fronx, Citroen C3
+
+=================================================================
+6. HYUNDAI ALCAZAR
+=================================================================
+Segment: 3-row Mid-size SUV
+Price Range: Rs. 14.49 lakh - Rs. 21.21 lakh (ex-showroom)
+Seating: 6/7 seater options
+
+Engine Options:
+- 1.5L Turbo Petrol (160 PS, 253 Nm)
+- 1.5L Turbo Diesel
+Mileage (ARAI): approx 15.37 kmpl (petrol turbo-auto)
+
+Trims: Executive, Prestige, Platinum, Signature, Signature Knight
+Key Features:
+- Level 2 ADAS on higher trims
+- Premium captain seats (6-seater variant)
+- Panoramic sunroof
+- Ventilated seats
+
+Competitors: Mahindra XUV700, MG Hector Plus, Tata Safari
+
+=================================================================
+7. HYUNDAI CRETA ELECTRIC (EV)
+=================================================================
+Segment: Electric Mid-size SUV
+Price Range: Rs. 18.03 lakh - Rs. 24.70 lakh (ex-showroom)
+Variants: 9-24 trims depending on listing, from Executive to Excellence LR Knight Edition
+
+Battery & Motor Options:
+- 42 kWh battery pack - 135 PS motor - Range: up to 420-473 km (MIDC)
+- 51.4 kWh battery pack (Long Range) - 171 PS motor - Range: up to 510 km (MIDC)
+- 0-100 kmph in approx 7.9 seconds (LR variant)
+
+Key Features:
+- Dual 10.25-inch screens with EV-specific UI
+- Panoramic sunroof, ventilated front seats
+- Floating center console with cooled storage, ambient lighting
+- Distinct EV styling inspired by Creta N Line and Ioniq 5 - pixelated closed
+  grille, centrally located charging port, 17-inch aero alloy wheels
+- 3 driving modes: Eco, Normal, Sport
+- Assured buyback program: 60% buyback value till 3 years / up to 45,000 km
+- Battery-as-a-Service (BaaS) option now available (reduces upfront cost)
+
+EMI Example: Starts at approx Rs. 36,947/month (60 months, 9.8% interest,
+loan amount Rs. 17.47 lakh, down payment Rs. 1.94 lakh)
+
+Competitors: Tata Nexon EV, MG ZS EV, BYD Atto 3 (segment-wise)
+
+=================================================================
+8. HYUNDAI IONIQ 5 (EV)
+=================================================================
+Segment: Premium Electric SUV/Crossover
+Price: Rs. 55.70 lakh - 55.71 lakh (ex-showroom) [facelift model]
+
+Key Specs:
+- 84 kWh battery pack, single motor (RWD)
+- Power: 225 bhp
+- Claimed range: up to 690 km
+- Fast charging: 350 kW, 10-80% charge in approx 18 minutes
+
+Positioning: Flagship EV, competes with premium electric SUVs like BYD Atto 3
+and other luxury EV crossovers.
+
+=================================================================
+9. OTHER HYUNDAI MODELS (Quick Reference)
+=================================================================
+- Grand i10 Nios (Hatchback): Rs. 5.60 lakh - 8.56 lakh - Most affordable
+  Hyundai model in India
+- Aura (Sedan): Rs. 5.47 lakh - 8.60 lakh
+- i20 N Line (Sporty Hatchback): Rs. 9.99 lakh - 11.60 lakh
+- Tucson (Mid-size SUV, 5-seater): approx Rs. 22.64 lakh - 33.50 lakh (higher
+  trims); note - some listings show Tucson discontinued Nov 2025, confirm
+  current availability with dealership
+- Ioniq 6 (Electric Sedan): Upcoming launch in India
+- Ioniq 9 (Electric SUV): Upcoming, expected around Rs. 1.10 crore
+
+Note: Hyundai currently offers around 13-15 models in India across
+hatchback, sedan, SUV, and EV segments. Upcoming launches include Bayon,
+Inster, Ioniq 6, Alcazar CNG, Kona Electric Facelift, i20 Facelift, and
+Creta facelift (2027, third-gen).
+
+=================================================================
+10. MODEL COMPARISON TABLE (Starting Ex-showroom Prices)
+=================================================================
+Model              | Segment            | Price Starts  | Price Ends
+--------------------|--------------------|--------------|--------------
+Grand i10 Nios     | Hatchback          | Rs. 5.60 L    | Rs. 8.56 L
+Aura               | Sedan              | Rs. 5.47 L    | Rs. 8.60 L
+Exter              | Micro SUV          | Rs. 5.80 L    | Rs. 9.61 L
+i20                | Hatchback          | Rs. 7.04 L    | Rs. 11.21 L
+i20 N Line         | Hatchback (Sporty) | Rs. 9.99 L    | Rs. 11.60 L
+Venue              | Compact SUV        | Rs. 7.99 L    | Rs. 15.83 L
+Verna              | Sedan              | Rs. 10.98 L   | Rs. 18.25 L
+Creta              | Mid-size SUV       | Rs. 10.91 L   | Rs. 20.11 L
+Creta N Line       | Mid-size SUV       | Rs. 10.79 L   | Rs. 20.45 L
+Alcazar            | 3-row SUV          | Rs. 14.49 L   | Rs. 21.21 L
+Creta Electric     | Electric SUV       | Rs. 18.03 L   | Rs. 24.70 L
+Tucson             | Mid-size SUV       | Rs. 22.64 L   | Rs. 33.50 L
+Ioniq 5            | Electric SUV       | Rs. 55.70 L   | Rs. 55.71 L
+
+(Prices approximate, ex-showroom, August 2026 - vary by city and offers)
+
+=================================================================
+11. CURRENT OFFERS (August 2026 - SAMPLE)
+=================================================================
+- Hyundai Creta: Benefits up to Rs. 85,000 (cash discount + exchange +
+  corporate bonus combined, varies by variant and city)
+- Hyundai Creta Electric: 1 offer available in New Delhi for August 2026
+- Various models: Exchange bonus, corporate discount, and finance scheme
+  benefits available - amount varies by model, variant and location
+- Note: Offers change monthly. For exact current offers, always confirm
+  with the nearest Hyundai dealership or official website.
+
+=================================================================
+12. SERVICE & MAINTENANCE
+=================================================================
+- Hyundai Bluelink connected car tech available on higher trims - remote
+  engine start, geo-fencing, vehicle tracking, SOS alerts
+- Standard warranty: 3 years / unlimited km (varies by model, confirm at
+  dealership); extended warranty up to 5-7 years available
+- Roadside assistance included with most new car purchases
+- Free/paid service packages available at time of purchase
+- Genuine accessories and Hyundai Care extended warranty programs available
+
+=================================================================
+13. GENERAL FAQs (for chatbot)
+=================================================================
+
+Q: Hyundai cars pe warranty kitni milti hai?
+A: Standard warranty 3 years/unlimited km hoti hai, extended warranty options
+bhi available hote hain up to 5-7 years (dealership se confirm karein).
+
+Q: EMI kaise calculate hoti hai?
+A: Example - Hyundai Creta ke liye EMI approx Rs. 24,619/month starts hoti hai
+(60 months tenure, 9.8% interest, loan amount Rs. 11.64 lakh, down payment
+Rs. 1.29 lakh). Exact EMI car model, loan amount aur bank ke hisaab se
+alag hoti hai.
+
+Q: Test drive kaise book karein?
+A: Nearest Hyundai dealership visit karein ya official website
+(hyundai.com/in) pe "Book a Test Drive" option use karein.
+
+Q: Konse safety features standard hain?
+A: Almost saare current-gen Hyundai models (Creta, Venue, Exter, i20, Verna)
+me 6 airbags, ABS with EBD, aur electronic stability control standard hain.
+
+Q: ADAS kya hai aur kaunse models me milta hai?
+A: ADAS (Advanced Driver Assistance System) Level 2 safety suite hai jisme
+lane-keeping assist, forward collision warning, blind-spot monitoring jaise
+features hote hain. Yeh Creta, Venue, Alcazar, aur Verna ke top variants
+me available hai.
+
+Q: Electric vehicle options kya hain?
+A: Hyundai IONIQ 5, IONIQ 6, IONIQ 9, aur Creta Electric India me available
+electric models hain.
+
+Q: Finance/loan options kya hain?
+A: Multiple banks (HDFC, Federal Bank, etc.) se car loan available hai,
+typically 10-30% down payment ke saath.
+
+Q: Creta aur Venue me kya difference hai?
+A: Creta mid-size SUV hai (bada, zyada features, higher price range Rs. 10.91L-20.11L)
+jabki Venue compact SUV hai (chhota, city-friendly, price range Rs. 7.99L-15.83L).
+Creta zyada boot space (433L vs 375L) aur premium features deti hai.
+
+Q: Sabse affordable Hyundai car kaunsi hai?
+A: Grand i10 Nios sabse affordable hai, starting price Rs. 5.60 lakh (ex-showroom).
+
+Q: Diesel variant kis model me milta hai?
+A: Creta, Venue, Verna, aur Alcazar me diesel engine options available hain.
+Chhoti cars (i20, Exter, Grand i10 Nios, Aura) sirf petrol me aati hain.
+
+Q: Exchange bonus milta hai kya purani car pe?
+A: Haan, purani car ke exchange par bonus milta hai jo model aur condition
+ke hisaab se vary karta hai. Exact amount ke liye dealership se baat karein.
+
+Q: Hyundai Creta Electric ki range kitni hai?
+A: Battery pack ke hisaab se - 42kWh variant ~420km range deta hai aur
+51.4kWh Long Range variant ~510km tak range deta hai (MIDC certified).
+
+Q: Kaunsi car family ke liye best hai?
+A: Agar budget Rs 15 lakh tak hai to Creta best family SUV hai (spacious,
+safe, feature-rich). Bada family (6-7 seater) chahiye to Alcazar best hai.
+
+Q: Bluelink kya hai?
+A: Hyundai Bluelink ek connected car technology hai jo remote engine start,
+vehicle tracking, geo-fencing, aur SOS emergency alerts jaise features deti hai.
+Yeh higher trims me standard/optional milta hai.
+
+=================================================================
+14. DEALERSHIP INFO (SAMPLE - CUSTOMIZE FOR ACTUAL DEALERSHIP)
+=================================================================
+Note: Yeh section demo ke liye placeholder hai. Real deployment ke liye
+apni dealership ka naam, address, contact number, working hours, aur
+service center details yahan add karein.
+
+Showroom Timings: 9:00 AM - 8:00 PM (Monday - Sunday)
+Service Center Timings: 9:00 AM - 7:00 PM
+Contact: [Add dealership phone number]
+Address: [Add dealership address]
