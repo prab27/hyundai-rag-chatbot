@@ -64,6 +64,97 @@ def persist_current_chat():
     }
     save_all_chats(chats)
 
+
+# ---------------------------------------------------------------------------
+# LEAD GENERATION (capture interested customers for dealership follow-up)
+# ---------------------------------------------------------------------------
+# A "lead" is a potential customer's contact info + what car they're interested
+# in. The dealership sales team uses these to follow up and close a sale.
+# We save every lead to a file, and optionally email it to the dealership.
+LEADS_FILE = "leads.json"
+
+
+def load_all_leads():
+    try:
+        with open(LEADS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def save_lead(name, phone, car_interest, message, source="form"):
+    """Append a new lead to the leads file and try to email the dealership."""
+    leads = load_all_leads()
+    lead = {
+        "name": name.strip(),
+        "phone": phone.strip(),
+        "car_interest": car_interest.strip(),
+        "message": message.strip(),
+        "source": source,  # "form" or "chat" (smart detection)
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+    leads.append(lead)
+    try:
+        with open(LEADS_FILE, "w", encoding="utf-8") as f:
+            json.dump(leads, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+    email_lead_to_dealership(lead)
+    return lead
+
+
+def email_lead_to_dealership(lead):
+    """Optionally email a lead to the dealership.
+    Only runs if SMTP settings are configured in Streamlit secrets.
+    Fails silently (lead is still saved to file) if not configured."""
+    try:
+        smtp_host = st.secrets.get("SMTP_HOST")
+        smtp_user = st.secrets.get("SMTP_USER")
+        smtp_pass = st.secrets.get("SMTP_PASS")
+        dealer_email = st.secrets.get("DEALER_EMAIL")
+        if not all([smtp_host, smtp_user, smtp_pass, dealer_email]):
+            return False  # email not configured — that's fine, lead is saved
+
+        import smtplib
+        from email.mime.text import MIMEText
+
+        body = (
+            f"New lead from Hyundai chatbot:\n\n"
+            f"Name: {lead['name']}\n"
+            f"Phone: {lead['phone']}\n"
+            f"Interested in: {lead['car_interest']}\n"
+            f"Message: {lead['message']}\n"
+            f"Source: {lead['source']}\n"
+            f"Time: {lead['created_at']}\n"
+        )
+        msg = MIMEText(body)
+        msg["Subject"] = f"New Hyundai Lead: {lead['name']} ({lead['car_interest']})"
+        msg["From"] = smtp_user
+        msg["To"] = dealer_email
+
+        port = int(st.secrets.get("SMTP_PORT", 587))
+        with smtplib.SMTP(smtp_host, port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        return True
+    except Exception:
+        return False  # any email failure shouldn't break the app
+
+
+# Words that signal a customer is ready to buy / wants to be contacted
+BUYING_INTENT_TRIGGERS = [
+    "book", "booking", "kharid", "khareed", "buy", "purchase", "test drive",
+    "test-drive", "emi", "loan", "finance", "down payment", "price quote",
+    "quotation", "on road price", "on-road", "contact me", "call me",
+    "interested", "delivery", "exchange", "offer chahiye",
+]
+
+
+def detect_buying_intent(text):
+    text_lower = text.lower()
+    return any(trigger in text_lower for trigger in BUYING_INTENT_TRIGGERS)
+
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
@@ -462,6 +553,46 @@ with st.sidebar:
                     st.rerun()
 
     st.divider()
+    # ---- Lead capture form ----
+    st.markdown("**📋 Get a callback**")
+    st.caption("Interested? Leave your details and our team will call you.")
+    with st.form("lead_form", clear_on_submit=True):
+        lead_name = st.text_input("Your name")
+        lead_phone = st.text_input("Phone number")
+        lead_car = st.selectbox(
+            "Interested in",
+            ["", "Creta", "Venue", "Verna", "Alcazar", "Exter", "i20",
+             "Creta Electric", "Ioniq 5", "Not sure yet"],
+        )
+        lead_msg = st.text_area("Message (optional)", height=70)
+        submitted = st.form_submit_button("Submit", use_container_width=True)
+        if submitted:
+            if lead_name.strip() and lead_phone.strip():
+                save_lead(lead_name, lead_phone, lead_car or "Not specified",
+                          lead_msg, source="form")
+                st.success("Thanks! Our team will contact you soon. ✅")
+            else:
+                st.warning("Please enter at least your name and phone number.")
+
+    st.divider()
+    # ---- Dealership dashboard: view captured leads ----
+    with st.expander("🗂️ Dealership: view leads"):
+        leads = load_all_leads()
+        if not leads:
+            st.caption("No leads captured yet.")
+        else:
+            st.caption(f"Total leads: {len(leads)}")
+            for ld in reversed(leads[-15:]):  # show latest 15
+                st.markdown(
+                    f"**{ld['name']}** · {ld['phone']}  \n"
+                    f"Car: {ld['car_interest']} · via {ld['source']}  \n"
+                    f"_{ld.get('message', '') or 'No message'}_  \n"
+                    f"<span style='color:gray;font-size:11px'>{ld['created_at']}</span>",
+                    unsafe_allow_html=True,
+                )
+                st.divider()
+
+    st.divider()
     st.markdown("**Sample questions:**")
     st.markdown("- What is the price of Creta?\n- Difference between Creta and Venue?\n- What are the EV options?\n- Which is the best car for a family?")
 
@@ -581,6 +712,36 @@ for i, msg in enumerate(st.session_state.messages):
                     # user_index is the message right before this assistant reply
                     regenerate_from(i - 1)
 
+# Smart lead prompt: shown inline when the customer showed buying intent
+if st.session_state.get("show_lead_prompt"):
+    with st.container():
+        st.info("🚗 Lagta hai aap interested hain! Apna contact chhod dijiye, "
+                "hamari team aapko call karke aage ki process me help karegi.")
+        with st.form("inline_lead_form", clear_on_submit=True):
+            c1, c2 = st.columns(2)
+            with c1:
+                il_name = st.text_input("Name")
+            with c2:
+                il_phone = st.text_input("Phone")
+            il_car = st.text_input("Which car are you interested in?")
+            cola, colb = st.columns([1, 1])
+            with cola:
+                il_submit = st.form_submit_button("📞 Request callback", use_container_width=True)
+            with colb:
+                il_skip = st.form_submit_button("Skip", use_container_width=True)
+            if il_submit:
+                if il_name.strip() and il_phone.strip():
+                    save_lead(il_name, il_phone, il_car or "Not specified",
+                              "Captured from chat (buying intent)", source="chat")
+                    st.session_state.show_lead_prompt = False
+                    st.success("Thanks! Our team will call you shortly. ✅")
+                    st.rerun()
+                else:
+                    st.warning("Please enter your name and phone number.")
+            if il_skip:
+                st.session_state.show_lead_prompt = False
+                st.rerun()
+
 # Chat input for new questions
 raw_prompt = st.chat_input("Type your question...")
 if raw_prompt and raw_prompt.strip():
@@ -604,5 +765,9 @@ if raw_prompt and raw_prompt.strip():
         "image": image_url, "image_caption": image_caption,
         "source": source_label,
     })
+    # Smart lead detection: if the customer shows buying intent, flag it so
+    # an inline "leave your contact" prompt appears after the answer.
+    if detect_buying_intent(prompt):
+        st.session_state.show_lead_prompt = True
     persist_current_chat()
     st.rerun()
