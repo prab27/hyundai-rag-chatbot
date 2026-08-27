@@ -304,13 +304,144 @@ vehicle tracking, geo-fencing, aur SOS emergency alerts jaise features deti hai.
 Yeh higher trims me standard/optional milta hai.
 
 =================================================================
-14. DEALERSHIP INFO (SAMPLE - CUSTOMIZE FOR ACTUAL DEALERSHIP)
+14. HYUNDAI SHOWROOMS IN BANGALORE (Real Dealership Data)
 =================================================================
-Note: Yeh section demo ke liye placeholder hai. Real deployment ke liye
-apni dealership ka naam, address, contact number, working hours, aur
-service center details yahan add karein.
+Yeh Bangalore ke actual Hyundai showrooms ki jaankari hai — address,
+phone number, aur working hours ke saath. Customer nearest showroom
+dhoondh sakta hai, test drive ya purchase ke liye contact kar sakta hai.
 
-Showroom Timings: 9:00 AM - 8:00 PM (Monday - Sunday)
-Service Center Timings: 9:00 AM - 7:00 PM
-Contact: [Add dealership phone number]
-Address: [Add dealership address]
+-----------------------------------------------------------------
+ADVAITH HYUNDAI - VASANTH NAGAR
+-----------------------------------------------------------------
+Address: 16, Millers Rd, Kaverappa Layout, Vasanth Nagar, Bengaluru,
+Karnataka 560001
+Phone: +91 78130 32423
+Timings: Monday-Sunday, 8:30 AM - 7:30 PM
+Rating: 4.8 stars (4,841 reviews)
+Services: Car sales, service center, car wash, chauffeur service
+Note: Bangalore ka sabse highly-rated Advaith showroom (4.8 stars).
+
+-----------------------------------------------------------------
+ADVAITH HYUNDAI - RESIDENCY ROAD
+-----------------------------------------------------------------
+Address: #32, Residency Rd, opp. Hotel Gateway, Shanthala Nagar,
+Ashok Nagar, Bengaluru, Karnataka 560025
+Phone: +91 78130 32424
+Timings: Monday-Sunday, 8:30 AM - 7:30 PM
+Rating: 4.7 stars (3,216 reviews)
+Services: Car sales, service center. Central location near MG Road area.
+
+-----------------------------------------------------------------
+ADVAITH HYUNDAI - BILEKAHALLI (Bannerghatta Road)
+-----------------------------------------------------------------
+Address: Pavillion No.5, Bannerghatta Rd, opposite Brand Factory,
+Dollar Layout, Phase 4, Bilekahalli, Bengaluru, Karnataka 560076
+Phone: +91 97310 97310
+Timings: Monday-Sunday, 8:30 AM - 7:30 PM
+Rating: 4.7 stars (2,621 reviews)
+Services: Car sales, service, car wash, chauffeur service.
+
+-----------------------------------------------------------------
+BLUE HYUNDAI - MYSORE ROAD (Signature Showroom & Service Center)
+-----------------------------------------------------------------
+Address: 108, 13th KM, Mysore Rd, Kenchenhalli, Rajarajeshwari Nagar,
+Bengaluru, Karnataka 560059
+Phone: +91 95911 00001
+Timings: Monday-Sunday, 9:30 AM - 8:00 PM
+Rating: 4.7 stars (10,359 reviews)
+Services: Sales + full service center. Largest/most-reviewed Hyundai
+showroom in Bangalore. Signature (premium) showroom.
+
+-----------------------------------------------------------------
+BLUE HYUNDAI - BASAVANAGUDI
+-----------------------------------------------------------------
+Address: 15, Bull Temple Rd, opp. Ramakrishna Ashrama Circle, next to
+HSBC Bank, Gandhi Bazaar, Basavanagudi, Bengaluru, Karnataka 560004
+Phone: +91 95912 11118
+Timings: Monday-Sunday, 9:30 AM - 8:00 PM
+Rating: 4.7 stars (2,002 reviews)
+Services: Car sales and support. South Bangalore location.
+
+-----------------------------------------------------------------
+BLUE HYUNDAI - RAJAJINAGAR (RTO)
+-----------------------------------------------------------------
+Address: 620, Dr Rajkumar Rd, near Rajajinagar 2nd Block, Rajajinagar,
+Bengaluru, Karnataka 560010
+Phone: +91 95912 00001
+Timings: Monday-Sunday, 9:30 AM - 8:00 PM
+Rating: 4.6 stars (3,594 reviews)
+Services: Car sales. Near Rajajinagar RTO, West Bangalore.
+
+-----------------------------------------------------------------
+TRIDENT HYUNDAI - SANKEY ROAD / MALLESHWARAM (Signature Showroom)
+-----------------------------------------------------------------
+Address: 1, Lower Palace Orchards, Sankey Rd, Sadashiva Nagar,
+Guttahalli, Bengaluru, Karnataka 560003
+Phone: +91 80 4343 3333
+Timings: Monday-Saturday 9:30 AM - 8:00 PM; Sunday 10:00 AM - 7:00 PM
+Rating: 4.6 stars (2,838 reviews)
+Services: Sales, service, auto parts, insurance, finance. Premium
+Signature showroom in North-Central Bangalore.
+
+-----------------------------------------------------------------
+TRIDENT HYUNDAI - ELECTRONIC CITY / HSR LAYOUT
+-----------------------------------------------------------------
+Address: 46, Electronic City, Hosur Rd, Kudlu Gate, Krishna Reddy
+Industrial Area, Electronic City, Bengaluru, Karnataka 560068
+Phone: +91 97437 86716
+Timings: Monday-Saturday 9:30 AM - 8:00 PM; Sunday 10:00 AM - 7:00 PM
+Rating: 4.4 stars (6,413 reviews)
+Services: Sales, service, auto parts, insurance, finance. Convenient
+for Electronic City / HSR Layout customers.
+
+-----------------------------------------------------------------
+LAKSHMI HYUNDAI - HEBBAL (Signature Showroom)
+-----------------------------------------------------------------
+Address: 1043/105, near Kodigehalli signal, Kodigehalli, Hebbal,
+Bengaluru, Karnataka 560092
+Phone: +91 99000 37900
+Timings: Monday-Sunday, 9:30 AM - 8:00 PM
+Rating: 4.3 stars (2,831 reviews)
+Services: Sales, insurance, finance. North Bangalore (Hebbal) location.
+
+-----------------------------------------------------------------
+PAVAN HYUNDAI - ELECTRONIC CITY / BOMMASANDRA
+-----------------------------------------------------------------
+Address: S.Y.No.39 & 40, Hosur Rd, opp. Bommasandra, RS Gardens,
+Bommasandra Industrial Area, Bommasandra, Karnataka 560099
+Phone: +91 73378 82522
+Timings: Monday-Sunday, 9:00 AM - 6:30 PM
+Rating: 4.8 stars (2,888 reviews)
+Services: Sales and service. South Bangalore (Bommasandra) - highly rated.
+
+-----------------------------------------------------------------
+SHOWROOM FAQs
+-----------------------------------------------------------------
+Q: Bangalore me Hyundai showroom kahan hai?
+A: Bangalore me kai Hyundai showrooms hain - Advaith Hyundai (Vasanth Nagar,
+Residency Road, Bilekahalli), Blue Hyundai (Mysore Road, Basavanagudi,
+Rajajinagar), Trident Hyundai (Sankey Road, Electronic City), Lakshmi
+Hyundai (Hebbal), aur Pavan Hyundai (Bommasandra). Apne area ke hisaab se
+nearest choose karein.
+
+Q: Sabse highly-rated Hyundai showroom Bangalore me kaunsa hai?
+A: Advaith Hyundai Vasanth Nagar aur Pavan Hyundai (Bommasandra) dono 4.8
+stars rating ke saath top-rated hain. Blue Hyundai Mysore Road sabse zyada
+reviews (10,000+) ke saath bhi bahut popular hai.
+
+Q: Electronic City ke paas showroom kaunsa hai?
+A: Trident Hyundai Electronic City (Kudlu Gate) aur Pavan Hyundai
+(Bommasandra) - dono Electronic City area ke customers ke liye convenient hain.
+
+Q: Sunday ko showroom khula rehta hai?
+A: Haan, zyadatar Hyundai showrooms Sunday ko bhi khule rehte hain. Advaith
+aur Blue Hyundai roz 8:30/9:30 AM se khulte hain. Trident Sunday ko thoda
+alag timing (10 AM - 7 PM) rakhta hai.
+
+Q: Test drive kaise book karein?
+A: Kisi bhi nearest showroom pe phone karke ya visit karke test drive book
+kar sakte hain. Har showroom ka phone number upar diya gaya hai.
+
+Note: Yeh data public sources se liya gaya hai (August 2026). Exact timings,
+offers, aur availability ke liye showroom se direct confirm karein.
+

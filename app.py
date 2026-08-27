@@ -283,6 +283,24 @@ def retrieve_context(collection, all_chunks, query, top_k=4):
                 if keyword in chunk.lower() and chunk not in retrieved:
                     retrieved.append(chunk)
 
+    # 3) Showroom/location boost: if the user asks about showrooms, dealers,
+    # addresses, timings, or names a Bangalore area, pull in the showroom
+    # chunks so the bot can answer with real dealership data.
+    SHOWROOM_TRIGGERS = [
+        "showroom", "dealer", "dealership", "address", "location", "timing",
+        "phone", "contact", "near me", "bangalore", "bengaluru", "test drive",
+        "service center", "service centre",
+        "vasanth nagar", "residency", "bilekahalli", "bannerghatta",
+        "mysore road", "basavanagudi", "rajajinagar", "sankey", "malleshwaram",
+        "electronic city", "hebbal", "bommasandra", "hsr", "kudlu",
+    ]
+    if any(trigger in query_lower for trigger in SHOWROOM_TRIGGERS):
+        for chunk in all_chunks:
+            chunk_lower = chunk.lower()
+            if ("showroom" in chunk_lower or "hyundai -" in chunk_lower
+                    or "phone:" in chunk_lower) and chunk not in retrieved:
+                retrieved.append(chunk)
+
     return retrieved
 
 
