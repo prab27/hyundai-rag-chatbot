@@ -8,11 +8,61 @@ Run with: streamlit run app.py
 """
 
 import os
+import json
+import uuid
 import urllib.parse
+from datetime import datetime
 import streamlit as st
 import chromadb
 from chromadb.utils import embedding_functions
 from groq import Groq
+
+# ---------------------------------------------------------------------------
+# CHAT HISTORY STORAGE (file-based, persists across restarts)
+# ---------------------------------------------------------------------------
+# In a real product each user logs in and their chats live in a database keyed
+# by user id. For this demo we persist all chats to a local JSON file so the
+# history survives page refreshes and app restarts, just like Claude/ChatGPT.
+HISTORY_FILE = "chat_history.json"
+
+
+def load_all_chats():
+    """Return the dict of {chat_id: {title, created_at, messages}}."""
+    try:
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_all_chats(chats):
+    try:
+        with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(chats, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+
+def make_chat_title(messages):
+    """Use the first user message as the chat's title (like ChatGPT)."""
+    for m in messages:
+        if m["role"] == "user":
+            title = m["content"].strip()
+            return title[:40] + ("..." if len(title) > 40 else "")
+    return "New chat"
+
+
+def persist_current_chat():
+    """Save the in-progress conversation into the history file."""
+    if not st.session_state.messages:
+        return
+    chats = load_all_chats()
+    chats[st.session_state.current_chat_id] = {
+        "title": make_chat_title(st.session_state.messages),
+        "created_at": st.session_state.get("current_chat_created", datetime.now().isoformat()),
+        "messages": st.session_state.messages,
+    }
+    save_all_chats(chats)
 
 # ---------------------------------------------------------------------------
 # CONFIG
@@ -302,7 +352,52 @@ def generate_answer(client, query, context_chunks, chat_history=None):
 st.title("🚗 Hyundai Assistant (RAG Demo)")
 st.caption("Ask me anything about Creta, Venue, Verna, Alcazar and other Hyundai models.")
 
-# Sidebar: API key input (if not set as environment variable)
+# ---------------------------------------------------------------------------
+# SESSION STATE INIT (must run before sidebar/history uses it)
+# ---------------------------------------------------------------------------
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "editing_index" not in st.session_state:
+    st.session_state.editing_index = None
+if "current_chat_id" not in st.session_state:
+    st.session_state.current_chat_id = str(uuid.uuid4())
+if "current_chat_created" not in st.session_state:
+    st.session_state.current_chat_created = datetime.now().isoformat()
+
+
+def start_new_chat():
+    """Save the current chat, then reset to a fresh empty conversation."""
+    persist_current_chat()
+    st.session_state.messages = []
+    st.session_state.editing_index = None
+    st.session_state.current_chat_id = str(uuid.uuid4())
+    st.session_state.current_chat_created = datetime.now().isoformat()
+
+
+def load_chat(chat_id):
+    """Save the current chat, then load a past chat from history."""
+    persist_current_chat()
+    chats = load_all_chats()
+    if chat_id in chats:
+        st.session_state.messages = chats[chat_id]["messages"]
+        st.session_state.current_chat_id = chat_id
+        st.session_state.current_chat_created = chats[chat_id].get("created_at", datetime.now().isoformat())
+        st.session_state.editing_index = None
+
+
+def delete_chat(chat_id):
+    chats = load_all_chats()
+    if chat_id in chats:
+        del chats[chat_id]
+        save_all_chats(chats)
+    # If we deleted the chat we're currently viewing, reset to a fresh one
+    if chat_id == st.session_state.current_chat_id:
+        st.session_state.messages = []
+        st.session_state.current_chat_id = str(uuid.uuid4())
+        st.session_state.current_chat_created = datetime.now().isoformat()
+
+
+# Sidebar: API key input + chat history
 with st.sidebar:
     st.header("Setup")
     key_already_set = os.environ.get("GROQ_API_KEY") or (
@@ -316,23 +411,44 @@ with st.sidebar:
         st.success("Groq API key already configured.")
     st.markdown("[Get a free Groq API key here →](https://console.groq.com/keys)")
     st.divider()
-    if st.button("🗑️ New Chat", use_container_width=True):
-        st.session_state.messages = []
-        st.session_state.editing_index = None
+
+    if st.button("➕ New Chat", use_container_width=True):
+        start_new_chat()
         st.rerun()
+
+    # ---- Chat history list (like ChatGPT / Claude) ----
+    st.markdown("**Chat history**")
+    all_chats = load_all_chats()
+    if not all_chats:
+        st.caption("No past chats yet.")
+    else:
+        # Show most recent first
+        sorted_chats = sorted(
+            all_chats.items(),
+            key=lambda kv: kv[1].get("created_at", ""),
+            reverse=True,
+        )
+        for cid, chat in sorted_chats:
+            col1, col2 = st.columns([5, 1])
+            with col1:
+                label = chat.get("title", "Untitled")
+                # Mark the currently open chat
+                if cid == st.session_state.current_chat_id:
+                    label = "▶ " + label
+                if st.button(label, key=f"open_{cid}", use_container_width=True):
+                    load_chat(cid)
+                    st.rerun()
+            with col2:
+                if st.button("🗑️", key=f"del_{cid}"):
+                    delete_chat(cid)
+                    st.rerun()
+
     st.divider()
     st.markdown("**Sample questions:**")
     st.markdown("- What is the price of Creta?\n- Difference between Creta and Venue?\n- What are the EV options?\n- Which is the best car for a family?")
 
 # Build (or load cached) vector store
 collection, all_chunks = build_vector_store()
-
-# Chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "editing_index" not in st.session_state:
-    st.session_state.editing_index = None
-
 
 FOLLOWUP_TRIGGERS = [
     "aur detail", "aur batao", "iske baare", "uske baare", "isme", "usme",
@@ -407,6 +523,7 @@ def regenerate_from(user_index):
         "image": image_url, "image_caption": image_caption,
         "source": source_label,
     })
+    persist_current_chat()
     st.rerun()
 
 
@@ -469,4 +586,5 @@ if raw_prompt and raw_prompt.strip():
         "image": image_url, "image_caption": image_caption,
         "source": source_label,
     })
+    persist_current_chat()
     st.rerun()
